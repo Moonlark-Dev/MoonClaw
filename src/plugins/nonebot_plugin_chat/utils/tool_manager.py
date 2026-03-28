@@ -31,6 +31,7 @@ from .tools import (
     vm_send_input,
     vm_stop_task,
     is_vm_available,
+    exec_command,
 )
 from ..utils.emoji import QQ_EMOJI_MAP
 from .note_manager import check_note, get_context_notes
@@ -72,6 +73,19 @@ class ToolManager:
 
     async def vm_stop_task(self, task_id: str) -> str:
         return await vm_stop_task(task_id, self.text)
+
+    async def exec_command(self, command: str, timeout: Optional[int] = None, working_dir: Optional[str] = None) -> str:
+        """执行系统命令
+
+        Args:
+            command: 要执行的命令
+            timeout: 超时时间（秒）
+            working_dir: 工作目录
+
+        Returns:
+            命令执行结果
+        """
+        return await exec_command(command, timeout, working_dir, self.text)
 
     async def calculate_luck_value(self, nickname: str) -> str:
         """计算用户的人品值
@@ -180,6 +194,31 @@ class ToolManager:
                         description=await self.text("tools_desc.resolve_b23_url.b23_url"),
                         required=True,
                     )
+                },
+            )
+        )
+
+        # exec_command
+        tools.append(
+            AsyncFunction(
+                func=self.exec_command,
+                description=await self.text("tools_desc.exec_command.desc"),
+                parameters={
+                    "command": FunctionParameter(
+                        type="string",
+                        description=await self.text("tools_desc.exec_command.command"),
+                        required=True,
+                    ),
+                    "timeout": FunctionParameter(
+                        type="integer",
+                        description=await self.text("tools_desc.exec_command.timeout"),
+                        required=False,
+                    ),
+                    "working_dir": FunctionParameter(
+                        type="string",
+                        description=await self.text("tools_desc.exec_command.working_dir"),
+                        required=False,
+                    ),
                 },
             )
         )
