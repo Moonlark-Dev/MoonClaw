@@ -39,6 +39,7 @@ from .tools import (
 )
 from ..utils.emoji import QQ_EMOJI_MAP
 from .note_manager import check_note, get_context_notes
+from .config_manager import config_manager
 
 if TYPE_CHECKING:
     from ..core.processor import MessageProcessor
@@ -249,7 +250,7 @@ class ToolManager:
         )
 
         # exec_command
-        if mode == "group":
+        if mode == "group" and await config_manager.get("exec_enabled", True):
             tools.append(
                 AsyncFunction(
                     func=self.exec_command,
@@ -274,6 +275,8 @@ class ToolManager:
                 )
             )
 
+        # interactive_exec 相关工具
+        if mode == "group" and await config_manager.get("interactive_exec_enabled", True):
             # interactive_exec_create_session
             tools.append(
                 AsyncFunction(
