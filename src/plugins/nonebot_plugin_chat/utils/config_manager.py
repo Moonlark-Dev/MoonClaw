@@ -180,3 +180,5 @@ class ConfigManager:
         for key, value in updates.items():
             results[key] = await self.set(key, value)
         return results
+
+config_manager = ConfigManager()

@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 
-from ...config import config
+from ...config import config, config_manager
 from ...types import GetTextFunc
 
 # 输出截断长度限制
@@ -83,7 +83,7 @@ def _extract_command(command: str) -> str:
     return ""
 
 
-def _is_command_allowed(command: str) -> tuple[bool, Optional[str]]:
+async def _is_command_allowed(command: str) -> tuple[bool, Optional[str]]:
     """
     检查命令是否允许执行
 
@@ -96,18 +96,20 @@ def _is_command_allowed(command: str) -> tuple[bool, Optional[str]]:
     main_command = _extract_command(command)
 
     # 检查白名单
-    if config.interactive_exec_allowed_commands is not None:
-        if main_command not in config.interactive_exec_allowed_commands:
+    allowed_commands = await config_manager.get("interactive_exec_allowed_commands", None)
+    if allowed_commands is not None:
+        if main_command not in allowed_commands:
             return False, f"命令 '{main_command}' 不在允许执行的命令白名单中"
 
     # 检查黑名单
-    if main_command in config.interactive_exec_blocked_commands:
+    blocked_commands = await config_manager.get("interactive_exec_blocked_commands", ["rm", "del", "format"])
+    if main_command in blocked_commands:
         return False, f"命令 '{main_command}' 被禁止执行"
 
     return True, None
 
 
-def _truncate_output(output: str) -> tuple[str, bool]:
+async def _truncate_output(output: str) -> tuple[str, bool]:
     """
     截断输出内容
 
@@ -117,9 +119,10 @@ def _truncate_output(output: str) -> tuple[str, bool]:
     Returns:
         (截断后的输出, 是否发生截断)
     """
-    if len(output) <= OUTPUT_MAX_LENGTH:
+    max_length = await config_manager.get("interactive_exec_max_output_length", 4000)
+    if len(output) <= max_length:
         return output, False
-    return output[-OUTPUT_MAX_LENGTH:], True
+    return output[-max_length:], True
 
 
 def _format_datetime(dt: Optional[datetime]) -> str:
@@ -213,11 +216,11 @@ async def interactive_exec_create_session(
         会话创建结果
     """
     # 检查工具是否启用
-    if not config.interactive_exec_enabled:
+    if not await config_manager.get("interactive_exec_enabled", True):
         return await get_text("interactive_exec.disabled")
 
     # 检查命令是否允许执行
-    allowed, reason = _is_command_allowed(command)
+    allowed, reason = await _is_command_allowed(command)
     if not allowed:
         return await get_text("interactive_exec.blocked", reason)
 
@@ -257,7 +260,8 @@ async def interactive_exec_create_session(
         asyncio.create_task(_read_process_output(session))
 
         # 启动进程监控任务
-        asyncio.create_task(_monitor_process(session, config.interactive_exec_timeout))
+        timeout = await config_manager.get("interactive_exec_timeout", 300)
+        asyncio.create_task(_monitor_process(session, timeout))
 
         logger.info(f"创建交互式命令执行会话: {session_id} - {command}")
 
@@ -327,13 +331,14 @@ async def interactive_exec_get_session_state(
 
     # 处理输出
     if session.output:
-        truncated_output, was_truncated = _truncate_output(session.output)
+        truncated_output, was_truncated = await _truncate_output(session.output)
         result_lines.append("")
         result_lines.append(await get_text("interactive_exec.get_session_state.output_header"))
         result_lines.append(truncated_output)
         if was_truncated:
+            max_length = await config_manager.get("interactive_exec_max_output_length", 4000)
             result_lines.append("")
-            result_lines.append(await get_text("interactive_exec.get_session_state.output_truncated", OUTPUT_MAX_LENGTH))
+            result_lines.append(await get_text("interactive_exec.get_session_state.output_truncated", max_length))
     else:
         result_lines.append("")
         result_lines.append(await get_text("interactive_exec.get_session_state.output_none"))

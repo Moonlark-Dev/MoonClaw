@@ -27,7 +27,7 @@ import shlex
 from typing import Optional
 from nonebot.log import logger
 
-from ...config import config
+from ..config_manager import config_manager
 from ...types import GetTextFunc
 
 
@@ -54,7 +54,7 @@ def _extract_command(command: str) -> str:
     return ""
 
 
-def _is_command_allowed(command: str) -> tuple[bool, Optional[str]]:
+async def _is_command_allowed(command: str) -> tuple[bool, Optional[str]]:
     """
     检查命令是否允许执行
 
@@ -67,12 +67,14 @@ def _is_command_allowed(command: str) -> tuple[bool, Optional[str]]:
     main_command = _extract_command(command)
 
     # 检查白名单
-    if config.exec_allowed_commands is not None:
-        if main_command not in config.exec_allowed_commands:
+    allowed_commands = await config_manager.get("exec_allowed_commands", None)
+    if allowed_commands is not None:
+        if main_command not in allowed_commands:
             return False, f"命令 '{main_command}' 不在允许执行的命令白名单中"
 
     # 检查黑名单
-    if main_command in config.exec_blocked_commands:
+    blocked_commands = await config_manager.get("exec_blocked_commands", ["rm", "del", "format"])
+    if main_command in blocked_commands:
         return False, f"命令 '{main_command}' 被禁止执行"
 
     return True, None
@@ -97,16 +99,16 @@ async def exec_command(
         命令执行结果
     """
     # 检查工具是否启用
-    if not config.exec_enabled:
+    if not await config_manager.get("exec_enabled", True):
         return await get_text("exec.disabled")
 
     # 检查命令是否允许执行
-    allowed, reason = _is_command_allowed(command)
+    allowed, reason = await _is_command_allowed(command)
     if not allowed:
         return await get_text("exec.blocked", reason)
 
     # 获取实际使用的超时时间
-    actual_timeout = timeout or config.exec_timeout
+    actual_timeout = timeout or await config_manager.get("exec_timeout", 30)
 
     # 准备工作目录
     cwd = working_dir if working_dir else None
@@ -142,15 +144,16 @@ async def exec_command(
         stderr_text = stderr.decode("utf-8", errors="replace")
 
         # 截断输出
-        if len(stdout_text) <= config.exec_max_output_length:
+        max_output_length = await config_manager.get("exec_max_output_length", 4000)
+        if len(stdout_text) <= max_output_length:
             truncated_stdout, stdout_truncated = stdout_text, False
         else:
-            truncated_stdout, stdout_truncated = stdout_text[-config.exec_max_output_length:], True
+            truncated_stdout, stdout_truncated = stdout_text[-max_output_length:], True
 
-        if len(stderr_text) <= config.exec_max_output_length:
+        if len(stderr_text) <= max_output_length:
             truncated_stderr, stderr_truncated = stderr_text, False
         else:
-            truncated_stderr, stderr_truncated = stderr_text[-config.exec_max_output_length:], True
+            truncated_stderr, stderr_truncated = stderr_text[-max_output_length:], True
 
         # 构建结果
         result_lines = [
@@ -167,7 +170,7 @@ async def exec_command(
             if stdout_truncated:
                 result_lines.append("")
                 result_lines.append(
-                    await get_text("exec.output_truncated", config.exec_max_output_length)
+                    await get_text("exec.output_truncated", max_output_length)
                 )
 
         # 添加标准错误
@@ -178,7 +181,7 @@ async def exec_command(
             if stderr_truncated:
                 result_lines.append("")
                 result_lines.append(
-                    await get_text("exec.output_truncated", config.exec_max_output_length)
+                    await get_text("exec.output_truncated", max_output_length)
                 )
 
         # 如果没有输出
