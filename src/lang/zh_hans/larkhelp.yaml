@@ -1,0 +1,47 @@
+list:
+  title: Moonlark 命令列表
+  footer: 由 Moonlark & nonebot_plugin_larkhelp 生成
+  usage: '{__prefix__}{}'
+  usage_text: '用法:'
+  category:
+    tools: 实用工具
+    game: 游戏与娱乐
+    setting: 用户与系统管理
+    community: 社区与社交
+    new: 新加入的
+    
+command:
+  info: |
+    [✓] {}: {}
+    
+    提示：用法中的 <XXX> 为必要参数，[XXX] 为可选参数，AA|BB 表示选择。(XXX) 为用法解释，不包括在用法内。所有参数均不需要包含最外面的括号。
+    
+    用法:
+    {}
+  usage: '{__prefix__}{}'
+  not_found:
+    - 命令 {} 不存在，或无可用的帮助信息
+    - 没有找到指令 {} 喵……
+  error: |
+    指令列表发送失败了唔……
+    主人可以前往 Moonlark 的 GitHub 仓库的 COMMANDS.md 文件查阅指令列表喵~
+help:
+  description: 命令帮助
+  details: 获取命令用法
+  usage1: help (获取命令列表)
+  usage2: help <命令名> (查看命令帮助)
+
+markdown:
+  title: |
+    # Moonlark 指令列表
+
+    > 由 Moonlark & nonebot-plugin-larkhelp 生成
+
+  command: |
+    ## `{}`: {}
+
+    {}
+
+    ### 用法
+  
+  usage: "- `{}`\n"

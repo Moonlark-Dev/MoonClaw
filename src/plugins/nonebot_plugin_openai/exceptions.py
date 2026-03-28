@@ -1,0 +1,2 @@
+class EmptyReplyContent(Exception):
+    pass

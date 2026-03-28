@@ -1,0 +1,12 @@
+plugin: larklang
+commands:
+  lang:
+    description: help.description
+    details: help.details
+    usages:
+      - help.usage_list
+      - help.usage_view
+      - help.usage_set
+      - help.usage_reload
+    category: setting
+      
