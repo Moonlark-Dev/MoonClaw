@@ -4,6 +4,9 @@ nonebot_plugin_sha1/
 /bot.py
 .vscode/
 poetry.toml
+/cache/
+/config/
+/data/
 
 
 # Byte-compiled / optimized / DLL files
