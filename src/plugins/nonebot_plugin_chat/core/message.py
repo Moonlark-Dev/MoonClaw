@@ -137,7 +137,8 @@ class MessageQueue:
             False,
             identify="Chat",
             reasoning_effort="medium",
-            functions=await self.processor.tool_manager.select_tools("group")
+            functions=await self.processor.tool_manager.select_tools("group"),
+            pre_function_call=self.processor.send_function_call_feedback
         )
         retry_count = 0
         try:

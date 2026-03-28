@@ -52,6 +52,43 @@ class ToolManager:
     async def text(self, key: str, *args, **kwargs) -> str:
         return await self.processor.session.text(key, *args, **kwargs)
 
+    async def report_tool_call(self, tool_name: str, params: dict) -> Optional[str]:
+        """汇报工具调用
+
+        Args:
+            tool_name: 工具名称
+            params: 工具参数
+
+        Returns:
+            汇报消息文本，如果不需要汇报则返回 None
+        """
+        # 从 config_manager 中读取配置，如果没有则使用默认值
+        report_level = await config_manager.get("tool_call_report_level", "none")
+        report_template = await config_manager.get("tool_call_report_template", "正在调用工具: {tool_name}{params}")
+        excluded_tools = await config_manager.get("tool_call_report_excluded_tools", [])
+
+        # 检查是否需要上报
+        if report_level == "none":
+            return None
+
+        # 检查是否在排除列表中
+        if tool_name in excluded_tools:
+            return None
+
+        # 根据汇报级别生成消息
+        if report_level == "name":
+            # name 模式：只替换 tool_name，不显示参数
+            return report_template.format(tool_name=tool_name, params="")
+        elif report_level == "full":
+            # full 模式：显示工具名和完整参数
+            params_str = ", ".join(f"{k}={v}" for k, v in params.items())
+            return report_template.format(
+                tool_name=tool_name,
+                params=f" (参数: {params_str})" if params_str else ""
+            )
+
+        return None
+
     async def browse_webpage(self, url: str) -> str:
         return await browse_webpage(url, self.text)
 

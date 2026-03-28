@@ -34,4 +34,3 @@ async def _init_file_server():
 
     app = nonebot.get_app()
     app.mount("/chat/files", StaticFiles(directory=FILE_DIR), name="chat_files")
-

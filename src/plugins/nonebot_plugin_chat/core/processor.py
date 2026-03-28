@@ -144,16 +144,11 @@ class MessageProcessor:
     async def send_function_call_feedback(
         self, call_id: str, name: str, param: dict[str, Any]
     ) -> tuple[str, str, dict[str, Any]]:
-        match name:
-            case "browse_webpage":
-                text = await self.session.text("tools.browse", param.get("url"))
-            case "request_wolfram_alpha":
-                text = await self.session.text("tools.wolfram", param.get("question"))
-            case "web_search":
-                text = await self.session.text("tools.search", param.get("keyword"))
-            case _:
-                return call_id, name, param
-        await self.append_tool_call_history(text)
+        # 汇报工具调用
+        report_message = await self.tool_manager.report_tool_call(name, param)
+        if report_message:
+            await self.send_message(report_message)
+
         return call_id, name, param
 
     async def send_message(self, message_content: str, reply_message_id: str | None = None) -> None:
