@@ -525,6 +525,77 @@ tools_desc:
       命令执行的工作目录，默认为当前目录。
       例如: '/tmp' 或 'C:\\Users\\username'
       不指定则使用当前工作目录
+ 
+  interactive_exec_create_session:
+    desc: |
+      创建一个交互式命令执行会话。
+      **何时调用**:
+      - 当需要执行需要交互式输入的命令时
+      - 当需要长时间运行命令并实时查看输出时
+      - 当需要与命令进行多轮交互时
+      **使用流程**:
+      1. 调用此工具创建会话，获得会话 ID
+      2. 使用 interactive_exec_get_session_state 查询会话状态和输出
+      3. 如果会话需要交互式输入，使用 interactive_exec_send_input 发送输入
+      4. 如果需要终止会话，使用 interactive_exec_stop_session
+      **注意事项**:
+      - 会话是异步执行的，创建后需查询状态获取结果
+      - 对于长时间运行的命令，会话状态会显示为 running
+      - 会话有超时限制，超时后会自动终止
+      - 某些危险命令可能被禁止执行
+      - 输出内容可能被截断
+    command: |
+      要执行的命令。
+      支持所有标准的系统命令。
+      例如: 'ls -la' 或 'python3 script.py' 或 'echo hello'
+      可以使用管道、重定向等 Shell 特性。
+    title: |
+      会话标题，用于描述这个会话的用途。
+      应简洁明了地说明会话目的，便于后续追踪和管理。
+      例如: '查看系统信息'、'运行测试脚本'、'编译程序'
+
+  interactive_exec_get_session_state:
+    desc: |
+      获取指定会话的状态和输出内容。
+      **何时调用**:
+      - 在使用 interactive_exec_create_session 创建会话后，查询会话执行结果
+      - 需要检查长时间运行的会话是否完成
+      - 需要获取会话的输出内容
+      **会话状态说明**:
+      - running: 会话正在执行
+      - completed: 会话执行完成（成功）
+      - stopped: 会话被手动停止
+      - failed: 会话执行失败
+    session_id: "由 interactive_exec_create_session 返回的会话 ID。格式为 8 位 UUID，例如: '550e8400'"
+
+  interactive_exec_send_input:
+    desc: |
+      向正在运行的会话的标准输入（stdin）发送内容。
+      **何时调用**:
+      - 当会话需要交互式输入时（如程序等待用户输入）
+      - 当需要回答程序的提示问题时（如 yes/no 确认）
+      **注意事项**:
+      - 只能向状态为 running 的会话发送输入
+      - 如果需要发送换行符以模拟按下回车键，请在内容末尾添加 \n
+      - 发送后可使用 interactive_exec_get_session_state 查看会话响应
+    session_id: "正在运行的会话的 ID"
+    input_text: |
+      要发送到会话标准输入的内容。
+      如需模拟按下回车键，请在末尾添加换行符 \n。
+      例如: 'yes\n' 表示输入 yes 并按回车
+
+  interactive_exec_stop_session:
+    desc: |
+      停止一个正在运行的会话。
+      **何时调用**:
+      - 当会话运行时间过长需要终止时
+      - 当发现会话执行的命令有误需要中断时
+      - 当不再需要会话继续执行时
+      **注意事项**:
+      - 停止后的会话无法恢复
+      - 会话状态将变为 stopped
+    session_id: "要停止的会话的 ID"
+
 browse_webpage:
   success: |
     - URL: {}
@@ -652,4 +723,54 @@ parser:
     forward: '[合并转发：{}]'
   reply: '[回复: {}]'
   reply_with_sender: '[回复: {} (来自 {})]'
+
+interactive_exec:
+  disabled: "❌ interactive_exec 工具未启用"
+  blocked: "❌ 命令执行被拒绝
+原因: {}"
+  not_found: "❌ 命令未找到
+错误: {}"
+  permission_denied: "❌ 权限不足
+错误: {}"
+  error: "❌ 命令执行失败
+错误: {}"
+  create_session:
+    success: |
+      ✅ 会话创建成功！
+      会话ID: {}
+      标题: {}
+      命令: {}
+  get_session_state:
+    status_header: "📋 会话状态"
+    session_id: "会话ID: {}"
+    title: "标题: {}"
+    status: "状态: {} {}"
+    exit_code: "退出码: {}"
+    created_at: "创建时间: {}"
+    started_at: "开始时间: {}"
+    finished_at: "完成时间: {}"
+    output_header: "📤 输出内容:"
+    output_none: "📤 输出内容: (无)"
+    output_truncated: "（输出内容过长，仅显示最后 {} 个字符）"
+    not_found: "❌ 找不到会话
+会话ID: {}"
+  send_input:
+    success: |
+      ✅ 输入已发送
+      会话ID: {}
+      发送内容: {}
+    not_found: "❌ 找不到会话
+会话ID: {}"
+    not_running: "❌ 会话未在运行中，无法发送输入
+会话ID: {}"
+    error: "❌ 发送输入时发生错误: {}"
+  stop_session:
+    success: |
+      🛑 会话已停止
+      会话ID: {}
+    not_found: "❌ 找不到会话
+会话ID: {}"
+    not_running: "❌ 会话未在运行中，无法停止
+会话ID: {}"
+    error: "❌ 停止会话时发生错误: {}"
   reply_failed: '[回复: 获取信息失败]'

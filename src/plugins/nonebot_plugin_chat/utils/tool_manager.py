@@ -32,6 +32,10 @@ from .tools import (
     vm_stop_task,
     is_vm_available,
     exec_command,
+    interactive_exec_create_session,
+    interactive_exec_get_session_state,
+    interactive_exec_send_input,
+    interactive_exec_stop_session,
 )
 from ..utils.emoji import QQ_EMOJI_MAP
 from .note_manager import check_note, get_context_notes
@@ -86,6 +90,52 @@ class ToolManager:
             命令执行结果
         """
         return await exec_command(command, timeout, working_dir, self.text)
+
+    async def interactive_exec_create_session(self, command: str, title: str) -> str:
+        """创建交互式命令执行会话
+
+        Args:
+            command: 要执行的命令
+            title: 会话标题
+
+        Returns:
+            会话创建结果
+        """
+        return await interactive_exec_create_session(command, title, self.text)
+
+    async def interactive_exec_get_session_state(self, session_id: str) -> str:
+        """获取会话的状态和输出
+
+        Args:
+            session_id: 会话 ID
+
+        Returns:
+            会话状态信息
+        """
+        return await interactive_exec_get_session_state(session_id, self.text)
+
+    async def interactive_exec_send_input(self, session_id: str, input_text: str) -> str:
+        """向正在运行的会话发送输入
+
+        Args:
+            session_id: 会话 ID
+            input_text: 要发送的输入内容
+
+        Returns:
+            发送结果
+        """
+        return await interactive_exec_send_input(session_id, input_text, self.text)
+
+    async def interactive_exec_stop_session(self, session_id: str) -> str:
+        """停止正在运行的会话
+
+        Args:
+            session_id: 会话 ID
+
+        Returns:
+            停止结果
+        """
+        return await interactive_exec_stop_session(session_id, self.text)
 
     async def calculate_luck_value(self, nickname: str) -> str:
         """计算用户的人品值
@@ -219,6 +269,76 @@ class ToolManager:
                             type="string",
                             description=await self.text("tools_desc.exec_command.working_dir"),
                             required=False,
+                        ),
+                    },
+                )
+            )
+
+            # interactive_exec_create_session
+            tools.append(
+                AsyncFunction(
+                    func=self.interactive_exec_create_session,
+                    description=await self.text("tools_desc.interactive_exec_create_session.desc"),
+                    parameters={
+                        "command": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.interactive_exec_create_session.command"),
+                            required=True,
+                        ),
+                        "title": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.interactive_exec_create_session.title"),
+                            required=True,
+                        ),
+                    },
+                )
+            )
+
+            # interactive_exec_get_session_state
+            tools.append(
+                AsyncFunction(
+                    func=self.interactive_exec_get_session_state,
+                    description=await self.text("tools_desc.interactive_exec_get_session_state.desc"),
+                    parameters={
+                        "session_id": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.interactive_exec_get_session_state.session_id"),
+                            required=True,
+                        ),
+                    },
+                )
+            )
+
+            # interactive_exec_send_input
+            tools.append(
+                AsyncFunction(
+                    func=self.interactive_exec_send_input,
+                    description=await self.text("tools_desc.interactive_exec_send_input.desc"),
+                    parameters={
+                        "session_id": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.interactive_exec_send_input.session_id"),
+                            required=True,
+                        ),
+                        "input_text": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.interactive_exec_send_input.input_text"),
+                            required=True,
+                        ),
+                    },
+                )
+            )
+
+            # interactive_exec_stop_session
+            tools.append(
+                AsyncFunction(
+                    func=self.interactive_exec_stop_session,
+                    description=await self.text("tools_desc.interactive_exec_stop_session.desc"),
+                    parameters={
+                        "session_id": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.interactive_exec_stop_session.session_id"),
+                            required=True,
                         ),
                     },
                 )
