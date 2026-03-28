@@ -31,7 +31,7 @@ from dataclasses import dataclass, field
 from nonebot.log import logger
 from nonebot_plugin_apscheduler import scheduler
 
-from ...config import config, config_manager
+from ..config_manager import config_manager
 from ...types import GetTextFunc
 
 # 输出截断长度限制

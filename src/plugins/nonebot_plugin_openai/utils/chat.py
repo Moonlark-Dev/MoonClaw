@@ -13,7 +13,7 @@ import inspect
 from openai.types.chat.chat_completion_message_function_tool_call import ChatCompletionMessageFunctionToolCall
 
 import json
-from typing import Optional, Any, AsyncGenerator, Callable, TypeVar, cast
+from typing import Literal, Optional, Any, AsyncGenerator, Callable, TypeVar, cast
 from nonebot import logger
 import openai
 from openai.types.shared_params import FunctionDefinition
@@ -69,6 +69,7 @@ class LLMRequestSession:
         timeout: Optional[int] = None,
         timeout_strategy: Optional[TimeoutStrategy] = None,
         reasoning_effort: Optional[ReasoningEffort] = None,
+        retry_callback: Optional[Callable[[int, Literal["retrying", "failed"]], Awaitable[None]]] = None,
     ) -> None:
         self.messages: Messages = messages
         self.identify = identify
@@ -87,6 +88,7 @@ class LLMRequestSession:
         self.timeout_per_request = timeout
         self.timeout_strategy = timeout_strategy
         self.insert_message_queue = []
+        self.retry_callback = retry_callback
 
     async def fetch_llm_response(self) -> AsyncGenerator[str, None]:
         retry_count = 0
@@ -98,7 +100,11 @@ class LLMRequestSession:
             if not is_success:
                 retry_count += 1
                 if retry_count > 3:
+                    if self.retry_callback:
+                        await self.retry_callback(retry_count, "failed")
                     raise Exception("Failed to fetch LLM response after 3 retries")
+                if self.retry_callback:
+                    await self.retry_callback(retry_count, "retrying")
                 await asyncio.sleep(1)
             else:
                 retry_count = 0
@@ -196,6 +202,7 @@ class MessageFetcher:
         timeout: Optional[int] = None,
         timeout_strategy: Optional[TimeoutStrategy] = None,
         reasoning_effort: Optional[ReasoningEffort] = None,
+        retry_callback: Optional[Callable[[int, Literal["retrying", "failed"]], Awaitable[None]]] = None,
         **kwargs,
     ) -> None:
         logger.debug(f"{identify=}")
@@ -217,6 +224,7 @@ class MessageFetcher:
             timeout,
             timeout_strategy,
             reasoning_effort,
+            retry_callback,
         )
 
     @classmethod
@@ -234,6 +242,7 @@ class MessageFetcher:
         timeout: Optional[int] = None,
         timeout_strategy: Optional[TimeoutStrategy] = None,
         reasoning_effort: Optional[ReasoningEffort] = None,
+        retry_callback: Optional[Callable[[int, Literal["retrying", "failed"]], Awaitable[None]]] = None,
         **kwargs,
     ) -> "MessageFetcher":
         """异步创建 MessageFetcher 实例，正确处理模型配置获取"""
@@ -257,6 +266,7 @@ class MessageFetcher:
             timeout,
             timeout_strategy,
             reasoning_effort,
+            retry_callback,
             **kwargs,
         )
 
@@ -285,6 +295,7 @@ async def fetch_message(
     timeout: Optional[int] = None,
     timeout_strategy: Optional[TimeoutStrategy] = None,
     reasoning_effort: Optional[ReasoningEffort] = None,
+    retry_callback: Optional[Callable[[int, str], Awaitable[None]]] = None,
     **kwargs,
 ) -> str:
     if identify is None:
@@ -304,6 +315,7 @@ async def fetch_message(
         timeout,
         timeout_strategy,
         reasoning_effort,
+        retry_callback,
         **kwargs,
     )
     return await fetcher.fetch_last_message()

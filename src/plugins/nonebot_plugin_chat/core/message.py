@@ -1,6 +1,6 @@
 import re
 import traceback
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Literal, Optional
 from nonebot.compat import type_validate_python
 from nonebot.log import logger
 
@@ -20,6 +20,7 @@ import json
 from datetime import datetime
 
 from ..utils.timing_stats import timing_stats_manager
+from ..utils.config_manager import config_manager
 
 if TYPE_CHECKING:
     from nonebot_plugin_chat.core.processor import MessageProcessor
@@ -125,6 +126,17 @@ class MessageQueue:
         if self.fetcher_task:
             self.fetcher_task.cancel()
 
+    async def retry_callback(self, retry_count: int, status: Literal["retrying", "failed"]) -> None:
+        retry_feedback_level = await config_manager.get("retry_feedback_level", 1)
+        if status == "retrying" and retry_feedback_level >= 2:
+            message = f"⚠️ 请求失败，正在重试 ({retry_count})..."
+        elif status == "failed" and retry_feedback_level >= 1:
+            message = f"❌ 请求失败，已达到最大重试次数 ({retry_count})"
+        else:
+            return
+        await self.processor.send_message(message)
+
+
     async def _fetch_reply(self) -> FetchStatus:
         state = FetchStatus.SUCCESS
         messages = await self.get_messages()
@@ -132,32 +144,42 @@ class MessageQueue:
             return FetchStatus.SKIP
         self.messages.clear()
         self.inserted_messages.clear()
+
+        # 获取重试反馈等级配置：0=不上报，1=仅在所有尝试均失败时上报，2=每次重试时上报
+        max_retries = await config_manager.get("message_queue_max_retries", 5)
+
+
         fetcher = await MessageFetcher.create(
             messages,
             False,
             identify="Chat",
             reasoning_effort="medium",
             functions=await self.processor.tool_manager.select_tools("group"),
-            pre_function_call=self.processor.send_function_call_feedback
+            pre_function_call=self.processor.send_function_call_feedback,
+            retry_callback=self.retry_callback
         )
         retry_count = 0
-        try:
-            async for message in fetcher.fetch_message_stream():
-                if retry_count > 5:
-                    raise Exception("Failed to fetch message")
-                if not message:
-                    continue
-                if self.continuous_response:
-                    fetcher.session.insert_messages(self.messages)
-                    self.messages.clear()
-                await self.processor.send_message(message)
-            self.messages = fetcher.get_messages() + self.messages
-        except Exception as e:
-            logger.exception(e)
-            # 恢复 Message
-            self.messages = messages + self.inserted_messages
-            self.inserted_messages.clear()
-            state = FetchStatus.FAILED
+        while retry_count <= max_retries:
+            try:
+                async for message in fetcher.fetch_message_stream():
+                    if not message:
+                        continue
+                    if self.continuous_response:
+                        fetcher.session.insert_messages(self.messages)
+                        self.messages.clear()
+                    await self.processor.send_message(message)
+                self.messages = fetcher.get_messages() + self.messages
+                break
+            except Exception as e:
+                retry_count += 1
+                logger.exception(e)
+                # 恢复 Message
+                self.messages = messages + self.inserted_messages
+                self.inserted_messages.clear()
+                await self.retry_callback(retry_count, "failed" if retry_count == max_retries else "retrying")
+
+                
+                    
         return state
 
     def append_user_message(self, message: str) -> None:
