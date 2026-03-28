@@ -38,7 +38,7 @@ from .tools import (
     interactive_exec_stop_session,
 )
 from ..utils.emoji import QQ_EMOJI_MAP
-from .note_manager import check_note, get_context_notes
+from .note_manager import check_note, get_context_notes, get_note_poster
 from .config_manager import config_manager
 
 if TYPE_CHECKING:
@@ -455,6 +455,46 @@ class ToolManager:
                 )
             )
 
+        if mode == "group":
+            # get_note_poster
+            tools.append(
+                AsyncFunction(
+                    func=self.push_note,
+                    description=await self.text("tools_desc.get_note_poster.desc"),
+                    parameters={
+                        "text": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.get_note_poster.text"),
+                            required=True,
+                        ),
+                        "expire_hours": FunctionParameter(
+                            type="integer",
+                            description=await self.text("tools_desc.get_note_poster.expire_hours"),
+                            required=False,
+                        ),
+                        "keywords": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.get_note_poster.keywords"),
+                            required=False,
+                        )
+                    },
+                )
+            )
+
+            tools.append(
+                AsyncFunction(
+                    func=self.remove_note,
+                    description=await self.text("tools_desc.get_note_remover.desc"),
+                    parameters={
+                        "note_id": FunctionParameter(
+                            type="integer",
+                            description=await self.text("tools_desc.get_note_remover.note_id"),
+                            required=True,
+                        ),
+                    },
+                )
+            )
+
         return tools
 
     async def remove_note(self, note_id: int) -> Optional[str]:
@@ -476,4 +516,5 @@ class ToolManager:
         text = note_check_result["text"]
         keywords = note_check_result["keywords"]
         expire_hours = note_check_result["expire_hours"]
-        await note_manager.create_note(content=text, keywords=keywords or "", expire_hours=expire_hours or 87600)
+        await note_manager.create_note(text, keywords or "", expire_hours)
+        return await self.text("note.create_success")

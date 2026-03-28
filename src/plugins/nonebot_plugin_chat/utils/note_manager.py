@@ -304,6 +304,25 @@ async def check_note(
         return AvailableNote(create=True, keywords=keywords, expire_hours=expire_hours or 87600, text=text, comment="")
 
 
+async def get_note_poster(context_id: str, users: dict[str, str]) -> str:
+    """获取笔记发布者信息
+
+    Args:
+        context_id: 上下文ID（群组ID或用户ID）
+        users: 用户字典 {nickname: user_id}
+
+    Returns:
+        发布者信息字符串
+    """
+    # 尝试从用户字典中获取发布者信息
+    if context_id in users.values():
+        for nickname, user_id in users.items():
+            if user_id == context_id:
+                return nickname
+    # 如果没有找到，返回 context_id
+    return context_id
+
+
 @scheduler.scheduled_job("cron", hour="3", id="cleanup_expired_notes")
 async def _() -> None:
     """Daily cleanup of expired notes at 3 AM"""
