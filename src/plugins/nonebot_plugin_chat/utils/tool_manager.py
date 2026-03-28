@@ -199,29 +199,30 @@ class ToolManager:
         )
 
         # exec_command
-        tools.append(
-            AsyncFunction(
-                func=self.exec_command,
-                description=await self.text("tools_desc.exec_command.desc"),
-                parameters={
-                    "command": FunctionParameter(
-                        type="string",
-                        description=await self.text("tools_desc.exec_command.command"),
-                        required=True,
-                    ),
-                    "timeout": FunctionParameter(
-                        type="integer",
-                        description=await self.text("tools_desc.exec_command.timeout"),
-                        required=False,
-                    ),
-                    "working_dir": FunctionParameter(
-                        type="string",
-                        description=await self.text("tools_desc.exec_command.working_dir"),
-                        required=False,
-                    ),
-                },
+        if mode == "group":
+            tools.append(
+                AsyncFunction(
+                    func=self.exec_command,
+                    description=await self.text("tools_desc.exec_command.desc"),
+                    parameters={
+                        "command": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.exec_command.command"),
+                            required=True,
+                        ),
+                        "timeout": FunctionParameter(
+                            type="integer",
+                            description=await self.text("tools_desc.exec_command.timeout"),
+                            required=False,
+                        ),
+                        "working_dir": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.exec_command.working_dir"),
+                            required=False,
+                        ),
+                    },
+                )
             )
-        )
 
         if is_vm_available():
             # vm_create_task
