@@ -18,6 +18,7 @@ from nonebot.adapters.onebot.v11.event import PokeNotifyEvent
 from nonebot_plugin_larkutils import get_user_id, get_group_id
 from nonebot_plugin_larkutils.subaccount import get_main_account
 from nonebot_plugin_larkutils.user import private_message
+from nonebot_plugin_larkutils.superuser import is_user_superuser
 from nonebot.log import logger
 from nonebot.matcher import Matcher
 from nonebot.adapters.onebot.v11 import GroupRecallNoticeEvent
@@ -76,12 +77,13 @@ async def _(
     bot: Bot,
     state: T_State,
     user_id: str = get_user_id(),
+    is_superuser: bool = is_user_superuser(),
 ) -> None:
     if isinstance(bot, BotQQ):
         await matcher.finish()
 
-    # NOTE 用于测试
-    if user_id != "1744793737":
+    # 检查用户是否为SUPERUSER
+    if not is_superuser:
         await matcher.finish()
 
     # 记录私聊会话信息（用于主动消息时获取正确的 bot）
