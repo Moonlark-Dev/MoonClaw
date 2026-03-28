@@ -4,7 +4,7 @@ from typing import Literal, Optional, TypedDict
 from nonebot_plugin_orm import Model
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import LargeBinary, String, Text, Float, Integer
+from sqlalchemy import DateTime, LargeBinary, String, Text, Float, Integer
 from sqlalchemy.dialects.mysql import MEDIUMBLOB, MEDIUMTEXT
 
 # 创建跨数据库兼容的大文本类型：MySQL 使用 MEDIUMTEXT (16MB)，其他数据库使用 Text
@@ -39,10 +39,9 @@ class PrivateChatSession(Model):
     last_proactive_message_time: Mapped[Optional[float]] = mapped_column(Float(), nullable=True)  # 最后主动消息时间戳
 
 
-class MainSessionData(Model):
-    """MainSession 数据持久化存储，用于保存 action_history"""
 
-    key: Mapped[str] = mapped_column(String(64), primary_key=True)  # 数据键名
-    # MySQL 使用 MEDIUMTEXT，其他数据库使用 Text
-    data_json: Mapped[str] = mapped_column(CompatibleMediumText)  # JSON 序列化的数据
-    updated_time: Mapped[float] = mapped_column(Float())  # 最后更新时间戳
+class MoonClawConfig(Model):
+    """MainSession 数据持久化存储，用于保存 action_history"""
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    data_json: Mapped[str] = mapped_column(Text())
+    updated_time: Mapped[datetime] = mapped_column(DateTime(), default=datetime.now)

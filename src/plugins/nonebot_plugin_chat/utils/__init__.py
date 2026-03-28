@@ -15,4 +15,5 @@
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # ##############################################################################
 
+from .config_manager import ConfigManager
 from .group import enabled_group, parse_message_to_string
