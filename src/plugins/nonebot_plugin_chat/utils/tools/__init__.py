@@ -29,3 +29,9 @@ from .vm import (
 )
 from .bilibili import describe_bilibili_video, resolve_b23_url
 from .exec import exec_command
+from .interactive_exec import (
+    interactive_exec_create_session,
+    interactive_exec_get_session_state,
+    interactive_exec_send_input,
+    interactive_exec_stop_session,
+)
