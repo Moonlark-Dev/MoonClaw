@@ -50,9 +50,6 @@ class PrivateSession(BaseSession):
     def is_napcat_bot(self) -> bool:
         return self.bot.self_id in config.napcat_bot_ids
 
-    async def send_poke(self, _: str) -> None:
-        if isinstance(self.bot, OB11Bot):
-            await self.bot.call_api("friend_poke", user_id=self.session_id)
 
     async def get_user_info(self, _: str) -> AdapterUserInfo:
         return self.user_info
