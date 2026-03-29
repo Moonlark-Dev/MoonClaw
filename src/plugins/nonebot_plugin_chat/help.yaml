@@ -2,3 +2,4 @@ plugin: 'chat'
 commands:
   chat: help;15;community
   rua: help_rua;3;community
+  state: help_state;5;admin

@@ -185,3 +185,40 @@ class MessageQueue:
 
     def is_last_message_from_user(self) -> bool:
         return get_role(self.messages[-1]) == "user"
+
+    def get_status(self) -> str:
+        """获取当前状态
+        
+        Returns:
+            str: 当前状态，可能为 "已失败"、"请求中" 或 "待命"
+        """
+        if self.fetcher_task:
+            if self.fetcher_task.done():
+                if self.fetcher_task.cancelled():
+                    return "已失败"
+                try:
+                    result = self.fetcher_task.result()
+                    if result == FetchStatus.FAILED:
+                        return "已失败"
+                    elif result in (FetchStatus.SUCCESS, FetchStatus.SKIP):
+                        return "待命"
+                except Exception:
+                    return "已失败"
+            else:
+                return "请求中"
+        return "待命"
+
+    def get_status_info(self) -> dict:
+        """获取详细状态信息
+        
+        Returns:
+            dict: 包含详细状态信息的字典
+        """
+        return {
+            "status": self.get_status(),
+            "message_count": len(self.messages),
+            "max_message_count": self.max_message_count,
+            "continuous_response": self.continuous_response,
+            "fetcher_lock_locked": self.fetcher_lock.locked(),
+            "fetcher_task_done": self.fetcher_task.done() if self.fetcher_task else None,
+        }
