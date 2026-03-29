@@ -145,7 +145,6 @@ class MessageQueue:
         self.messages.clear()
         self.inserted_messages.clear()
 
-        # 获取重试反馈等级配置：0=不上报，1=仅在所有尝试均失败时上报，2=每次重试时上报
         max_retries = await config_manager.get("message_queue_max_retries", 5)
 
 
@@ -155,11 +154,9 @@ class MessageQueue:
             identify="Chat",
             reasoning_effort="medium",
             functions=await self.processor.tool_manager.select_tools("group"),
-            pre_function_call=self.processor.send_function_call_feedback,
-            retry_callback=self.retry_callback
+            pre_function_call=self.processor.send_function_call_feedback
         )
-        retry_count = 0
-        while retry_count <= max_retries:
+        for retry_count in range(max_retries):
             try:
                 async for message in fetcher.fetch_message_stream():
                     if not message:
@@ -173,10 +170,11 @@ class MessageQueue:
             except Exception as e:
                 retry_count += 1
                 logger.exception(e)
-                # 恢复 Message
-                self.messages = messages + self.inserted_messages
-                self.inserted_messages.clear()
                 await self.retry_callback(retry_count, "failed" if retry_count == max_retries else "retrying")
+        else:
+            # 恢复 Message
+            self.messages = messages + self.inserted_messages
+            self.inserted_messages.clear()
 
                 
                     
