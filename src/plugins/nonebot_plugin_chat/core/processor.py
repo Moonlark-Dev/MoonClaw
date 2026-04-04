@@ -23,6 +23,7 @@ from ..utils.ai_agent import AskAISession
 from ..utils.emoji import QQ_EMOJI_MAP
 from ..utils.image import query_image_content
 from ..utils.note_manager import get_context_notes
+from ..utils.skill import skill_manager
 from ..utils.tool_manager import ToolManager
 from ..utils.timing_stats import timing_stats_manager
 
@@ -209,6 +210,9 @@ class MessageProcessor:
         # 获取相关笔记
         note_manager = await get_context_notes(self.session.session_id)
         notes, notes_from_other_group = await note_manager.filter_note(chat_history)
+        
+        # 加载 skill
+        skills_content = await skill_manager.get_skills_content(self.session.lang_str)
 
         async def format_note(note):
             created_time = datetime.fromtimestamp(note.created_time).strftime("%y-%m-%d")
@@ -237,6 +241,8 @@ class MessageProcessor:
                 await self.session.text("prompt_group.identify"),
                 # 5：绝对行为准则
                 await self.session.text("prompt_group.rule"),
+                # 6：skill
+                skills_content,
             ),
             "system",
         )
