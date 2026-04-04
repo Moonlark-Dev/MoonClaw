@@ -47,5 +47,6 @@ async def _(
     if session.mute_until is not None:
         await matcher.finish()
     session.processor.openai_messages.continuous_response = True
-    asyncio.create_task(session.processor.openai_messages.fetch_reply())
-    await lang.finish("retry.started", user_id)
+    await lang.send("retry.started", user_id)
+    await session.processor.openai_messages.fetch_reply()
+    
