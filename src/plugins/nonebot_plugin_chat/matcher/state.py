@@ -24,7 +24,7 @@ from ..core.session import get_session_directly
 from ..utils.timing_stats import timing_stats_manager
 from datetime import datetime
 
-state_matcher = on_command("state", priority=5, block=True)
+state_matcher = on_command("state")
 
 @state_matcher.handle()
 async def handle_state(event: GroupMessageEvent | PrivateMessageEvent):
