@@ -159,12 +159,11 @@ class MessageQueue:
         for retry_count in range(max_retries):
             try:
                 async for message in fetcher.fetch_message_stream():
-                    if not message:
-                        continue
                     if self.continuous_response:
                         fetcher.session.insert_messages(self.messages)
                         self.messages.clear()
-                    await self.processor.send_message(message)
+                    if message:
+                        await self.processor.send_message(message)
                 self.messages = fetcher.get_messages() + self.messages
                 break
             except Exception as e:
