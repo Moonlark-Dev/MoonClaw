@@ -67,12 +67,12 @@ class MessageProcessor:
                 await self.get_message()
             except Exception as e:
                 logger.exception(e)
-                await asyncio.sleep(5)
+                await asyncio.sleep(1)
 
 
     async def get_message(self) -> None:
         if not self.session.message_queue:
-            await asyncio.sleep(3)
+            await asyncio.sleep(0.5)
             return
         trigger_mode: Literal["none", "probability", "all"] = "none"
 
