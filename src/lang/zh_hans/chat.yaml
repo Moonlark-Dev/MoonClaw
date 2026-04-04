@@ -818,3 +818,5 @@ read_file:
   error: "❌ 读取文件失败\n文件路径: {}\n错误: {}"
 skill:
   item: '- {}({}): {}'
+retry:
+  started: "🔄 重试中"
