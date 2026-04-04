@@ -145,6 +145,7 @@ class LLMRequestSession:
         elif not self.insert_message_queue:
             self.stop = True
         self.messages.extend(self.insert_message_queue)
+        logger.debug(f"Successfully instered {len(self.insert_message_queue)} messages: {self.insert_message_queue}")
         self.insert_message_queue.clear()
 
     def insert_message(self, message: OpenaiMessage) -> None:
