@@ -162,6 +162,9 @@ class MessageQueue:
                 async for message in fetcher.fetch_message_stream():
                     if self.continuous_response:
                         fetcher.session.insert_messages(self.messages)
+                        self.inserted_messages.extend(self.messages)
+                        logger.debug(f"{self.messages=}")
+                        logger.debug(f"{fetcher.session.messages=}")
                         self.messages.clear()
                     if message:
                         await self.processor.send_message(message)
