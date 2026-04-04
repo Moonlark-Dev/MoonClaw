@@ -156,7 +156,8 @@ class MessageQueue:
             functions=await self.processor.tool_manager.select_tools("group"),
             pre_function_call=self.processor.send_function_call_feedback
         )
-        for retry_count in range(max_retries):
+        retry_count = 0
+        while retry_count < max_retries:
             try:
                 async for message in fetcher.fetch_message_stream():
                     if self.continuous_response:
@@ -164,6 +165,7 @@ class MessageQueue:
                         self.messages.clear()
                     if message:
                         await self.processor.send_message(message)
+                    retry_count = 0
                 self.messages = fetcher.get_messages() + self.messages
                 break
             except Exception as e:
