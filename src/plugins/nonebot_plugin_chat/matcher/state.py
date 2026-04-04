@@ -27,7 +27,7 @@ from datetime import datetime
 state_matcher = on_command("state")
 
 @state_matcher.handle()
-async def handle_state(event: GroupMessageEvent | PrivateMessageEvent, is_superuser: bool = is_user_superuser(event)):
+async def handle_state(event: GroupMessageEvent | PrivateMessageEvent, is_superuser: bool = is_user_superuser()):
     # 检查用户是否为超级用户
     if not is_superuser:
         await state_matcher.finish("只有超级用户可以查看状态")
