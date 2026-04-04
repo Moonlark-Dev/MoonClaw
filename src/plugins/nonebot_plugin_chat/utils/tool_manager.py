@@ -64,7 +64,7 @@ class ToolManager:
             汇报消息文本，如果不需要汇报则返回 None
         """
         # 从 config_manager 中读取配置，如果没有则使用默认值
-        report_level = await config_manager.get("tool_call_report_level", "none")
+        report_level = await config_manager.get("tool_call_report_level", "name")
         report_template = await config_manager.get("tool_call_report_template", "正在调用工具: {tool_name}{params}")
         excluded_tools = await config_manager.get("tool_call_report_excluded_tools", [])
 
