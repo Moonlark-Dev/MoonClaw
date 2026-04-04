@@ -32,6 +32,7 @@ from .tools import (
     vm_stop_task,
     is_vm_available,
     exec_command,
+    read_file,
     interactive_exec_create_session,
     interactive_exec_get_session_state,
     interactive_exec_send_input,
@@ -175,6 +176,26 @@ class ToolManager:
         """
         return await interactive_exec_stop_session(session_id, self.text)
 
+    async def read_file(
+        self,
+        file_path: str,
+        encoding: Optional[str] = "utf-8",
+        max_lines: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> str:
+        """读取指定文件的内容
+
+        Args:
+            file_path: 文件路径
+            encoding: 文件编码，默认 utf-8
+            max_lines: 最大读取行数
+            offset: 跳过的行数
+
+        Returns:
+            文件内容
+        """
+        return await read_file(file_path, self.text, encoding, max_lines, offset)
+
     async def calculate_luck_value(self, nickname: str) -> str:
         """计算用户的人品值
 
@@ -285,6 +306,37 @@ class ToolManager:
                 },
             )
         )
+
+        # read_file
+        if mode == "group" and await config_manager.get("read_file_enabled", True):
+            tools.append(
+                AsyncFunction(
+                    func=self.read_file,
+                    description=await self.text("tools_desc.read_file.desc"),
+                    parameters={
+                        "file_path": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.read_file.file_path"),
+                            required=True,
+                        ),
+                        "encoding": FunctionParameter(
+                            type="string",
+                            description=await self.text("tools_desc.read_file.encoding"),
+                            required=False,
+                        ),
+                        "max_lines": FunctionParameter(
+                            type="integer",
+                            description=await self.text("tools_desc.read_file.max_lines"),
+                            required=False,
+                        ),
+                        "offset": FunctionParameter(
+                            type="integer",
+                            description=await self.text("tools_desc.read_file.offset"),
+                            required=False,
+                        ),
+                    },
+                )
+            )
 
         # exec_command
         if mode == "group" and await config_manager.get("exec_enabled", True):

@@ -502,6 +502,28 @@ tools_desc:
       - 用户提供了一个 b23.tv 的短链，你需要了解这个视频的详细信息（配合 describe_bilibili_video 使用）
     b23_url: "b23.tv 短链，如 'https://b23.tv/xxx'"
 
+  read_file:
+    desc: |
+      读取指定文件的内容。
+      **何时调用**:
+      - 当需要查看文件内容时
+      - 当需要读取代码、日志、配置文件等时
+      **注意事项**:
+      - 只支持读取文件，不支持读取目录
+      - 可以通过 max_lines 参数限制读取的行数
+      - 可以通过 offset 参数跳过开头的行
+      - 文件路径应为绝对路径或相对路径
+    file_path: "要读取的文件路径，如 '/path/to/file.txt' 或 'relative/path.txt'"
+    encoding: |
+      文件编码，默认为 utf-8。
+      常见编码：utf-8、gbk、gb2312 等。
+    max_lines: |
+      最大读取行数，默认为 None 表示读取全部内容。
+      如果文件很大，可以设置此参数限制读取的行数。
+    offset: |
+      跳过的行数，默认为 None 表示从文件开头开始。
+      例如：设置为 100 表示跳过前 100 行，从第 101 行开始读取。
+
   exec_command:
     desc: |
       在本地系统执行命令。
@@ -728,14 +750,10 @@ parser:
 
 interactive_exec:
   disabled: "❌ interactive_exec 工具未启用"
-  blocked: "❌ 命令执行被拒绝
-原因: {}"
-  not_found: "❌ 命令未找到
-错误: {}"
-  permission_denied: "❌ 权限不足
-错误: {}"
-  error: "❌ 命令执行失败
-错误: {}"
+  blocked: "❌ 命令执行被拒绝\n原因: {}"
+  not_found: "❌ 命令未找到\n错误: {}"
+  permission_denied: "❌ 权限不足\n错误: {}"
+  error: "❌ 命令执行失败\n错误: {}"
   create_session:
     success: |
       ✅ 会话创建成功！
@@ -754,25 +772,38 @@ interactive_exec:
     output_header: "📤 输出内容:"
     output_none: "📤 输出内容: (无)"
     output_truncated: "（输出内容过长，仅显示最后 {} 个字符）"
-    not_found: "❌ 找不到会话
-会话ID: {}"
+    not_found: "❌ 找不到会话\n会话ID: {}"
   send_input:
     success: |
       ✅ 输入已发送
       会话ID: {}
       发送内容: {}
-    not_found: "❌ 找不到会话
-会话ID: {}"
-    not_running: "❌ 会话未在运行中，无法发送输入
-会话ID: {}"
+    not_found: "❌ 找不到会话\n会话ID: {}"
+    not_running: "❌ 会话未在运行中，无法发送输入\n会话ID: {}"
     error: "❌ 发送输入时发生错误: {}"
   stop_session:
     success: |
       🛑 会话已停止
       会话ID: {}
-    not_found: "❌ 找不到会话
-会话ID: {}"
-    not_running: "❌ 会话未在运行中，无法停止
-会话ID: {}"
+    not_found: "❌ 找不到会话\n会话ID: {}"
+    not_running: "❌ 会话未在运行中，无法停止\n会话ID: {}"
     error: "❌ 停止会话时发生错误: {}"
   reply_failed: '[回复: 获取信息失败]'
+
+read_file:
+  disabled: "❌ read_file 工具未启用"
+  not_found: "❌ 文件不存在\n文件路径: {}"
+  not_file: "❌ 路径不是文件\n文件路径: {}"
+  success: |
+    📄 文件: {}
+    
+    ---
+    {}
+  success_with_limit: |
+    📄 文件: {} (前 {} 行){}
+    
+    ---
+    {}
+  encoding_error: "❌ 文件编码错误，无法使用指定编码 {} 读取文件"
+  permission_denied: "❌ 权限不足，无法读取文件\n文件路径: {}"
+  error: "❌ 读取文件失败\n文件路径: {}\n错误: {}"

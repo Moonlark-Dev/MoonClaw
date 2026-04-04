@@ -94,8 +94,7 @@ async def _(
         await matcher.finish()
     plaintext = event.get_plaintext().strip()
     if any([plaintext.startswith(p) for p in config.command_start]):
-        # TODO 避免与 cave 冲突
-        await matcher.finish()
+        return
     platform_message = event.get_message()
     message = await UniMessage.of(message=platform_message, bot=bot).attach_reply(event, bot)
     nickname = await get_nickname(user_id, bot, event)
