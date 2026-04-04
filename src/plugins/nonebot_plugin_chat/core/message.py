@@ -170,7 +170,7 @@ class MessageQueue:
                         await self.processor.send_message(message)
                     retry_count = 0
                 self.messages = fetcher.get_messages() + self.messages
-                break
+                return
             except Exception as e:
                 retry_count += 1
                 logger.exception(e)
