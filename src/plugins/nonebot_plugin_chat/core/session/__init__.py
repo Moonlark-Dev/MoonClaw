@@ -96,6 +96,7 @@ async def reset_session(session_id: str) -> bool:
         session.processor.openai_messages.fetcher_task.cancel()
 
     # 清除消息队列中的所有消息
+    session.message_queue.clear()
     session.processor.openai_messages.messages.clear()
     session.processor.openai_messages.inserted_messages.clear()
 

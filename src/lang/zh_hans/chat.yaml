@@ -820,3 +820,5 @@ skill:
   item: '- {}({}): {}'
 retry:
   started: "🔄 重试中"
+new:
+  completed: "🆕 已创建新会话"
