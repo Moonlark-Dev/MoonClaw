@@ -46,5 +46,6 @@ async def _(
     session = await create_private_session(user_id, get_target(event), bot)
     if session.mute_until is not None:
         await matcher.finish()
-    asyncio.create_task(session.processor.generate_reply(True))
+    session.processor.openai_messages.continuous_response = True
+    asyncio.create_task(session.processor.openai_messages.fetch_reply())
     await lang.finish("retry.started", user_id)
