@@ -18,7 +18,7 @@ class Skill:
         self.content = content
         self.path = path
         self.description = description
-    
+
     @classmethod
     def from_text(cls, text: str, file: Path) -> "Skill":
         post = frontmatter.loads(text)
@@ -58,10 +58,14 @@ class SkillManager:
             except Exception as e:
                 logger.error(f"Failed to load skill {skill_dir.name}: {e}")
 
-
     async def get_skills_content(self, lang_str: str) -> str:
         await self.load_skills()
-        return "\n".join([await lang.text("skill.item", lang_str, skill.name, skill.path.as_posix(), skill.description) for skill in self.skills])
+        return "\n".join(
+            [
+                await lang.text("skill.item", lang_str, skill.name, skill.path.as_posix(), skill.description)
+                for skill in self.skills
+            ]
+        )
 
 
 skill_manager = SkillManager()

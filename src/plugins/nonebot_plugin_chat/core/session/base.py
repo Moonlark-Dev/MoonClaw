@@ -44,7 +44,6 @@ class BaseSession(ABC):
         self.llm_timers = []  # 定时器列表
         self.processor = MessageProcessor(self)
 
-
     @abstractmethod
     async def setup(self) -> None:
         await self.processor.setup()
@@ -115,7 +114,6 @@ class BaseSession(ABC):
     async def text(self, key: str, *args, **kwargs) -> str:
         return await lang.text(key, self.lang_str, *args, **kwargs)
 
-
     async def process_timer(self) -> None:
         dt = datetime.now()
         if self.mute_until and dt > self.mute_until:
@@ -140,7 +138,6 @@ class BaseSession(ABC):
             )
         return "\n".join(messages)
 
-    
     async def set_timer(self, delay: int, description: str = ""):
         """
         设置定时器

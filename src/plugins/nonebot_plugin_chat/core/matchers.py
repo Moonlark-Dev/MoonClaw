@@ -99,4 +99,3 @@ async def _(
     message = await UniMessage.of(message=platform_message, bot=bot).attach_reply(event, bot)
     nickname = await get_nickname(user_id, bot, event)
     await session.handle_message(message, user_id, event, state, nickname, True)
-

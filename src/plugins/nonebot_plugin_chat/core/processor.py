@@ -69,7 +69,6 @@ class MessageProcessor:
                 logger.exception(e)
                 await asyncio.sleep(1)
 
-
     async def get_message(self) -> None:
         if not self.session.message_queue:
             await asyncio.sleep(0.5)
@@ -129,7 +128,6 @@ class MessageProcessor:
             return
         self.cold_until = datetime.now() + timedelta(seconds=3)
 
-
         if self.session.get_session_type() == "group":
             self.openai_messages.continuous_response = self.openai_messages.continuous_response or important
 
@@ -162,7 +160,6 @@ class MessageProcessor:
 
         # 记录回应用时（使用 reply_message_id 查找对应的原消息）
         self._record_reply_timing(reply_message_id)
-
 
     def _record_reply_timing(self, reply_message_id: str | None = None) -> None:
         """记录回应用时（从 reply_message_id 对应的消息到发送回复的时间）"""
@@ -203,14 +200,12 @@ class MessageProcessor:
                 l.append(str(msg.content))
         return l
 
-
-    
     async def generate_system_prompt(self) -> OpenAIMessage:
         chat_history = "\n".join(self.get_message_content_list())
         # 获取相关笔记
         note_manager = await get_context_notes(self.session.session_id)
         notes, notes_from_other_group = await note_manager.filter_note(chat_history)
-        
+
         # 加载 skill
         skills_content = await skill_manager.get_skills_content(self.session.lang_str)
 
@@ -246,4 +241,3 @@ class MessageProcessor:
             ),
             "system",
         )
-

@@ -41,5 +41,5 @@ async def _(
 
     logger.info(f"Resetting session for user {user_id}")
     await reset_session(user_id)
-    
+
     await lang.send("new.completed", user_id)
