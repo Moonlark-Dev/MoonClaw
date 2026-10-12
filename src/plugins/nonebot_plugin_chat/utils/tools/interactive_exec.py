@@ -265,12 +265,7 @@ async def interactive_exec_create_session(
 
         logger.info(f"创建交互式命令执行会话: {session_id} - {command}")
 
-        return await get_text(
-            "interactive_exec.create_session.success",
-            session_id,
-            title,
-            command
-        )
+        return await get_text("interactive_exec.create_session.success", session_id, title, command)
 
     except FileNotFoundError as e:
         logger.error(f"命令执行失败: {e}")

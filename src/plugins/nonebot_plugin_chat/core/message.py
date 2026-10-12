@@ -121,7 +121,6 @@ class MessageQueue:
         # 记录抓取结束时间
         timing_stats_manager.record_fetch_end(session_id)
 
-
     async def stop_fetcher(self) -> None:
         if self.fetcher_task:
             self.fetcher_task.cancel()
@@ -136,7 +135,6 @@ class MessageQueue:
             return
         await self.processor.send_message(message)
 
-
     async def _fetch_reply(self) -> FetchStatus:
         state = FetchStatus.SUCCESS
         messages = await self.get_messages()
@@ -147,14 +145,13 @@ class MessageQueue:
 
         max_retries = await config_manager.get("message_queue_max_retries", 5)
 
-
         fetcher = await MessageFetcher.create(
             messages,
             False,
             identify="Chat",
             reasoning_effort="medium",
             functions=await self.processor.tool_manager.select_tools("group"),
-            pre_function_call=self.processor.send_function_call_feedback
+            pre_function_call=self.processor.send_function_call_feedback,
         )
         retry_count = 0
         while retry_count < max_retries:
@@ -179,8 +176,6 @@ class MessageQueue:
             self.inserted_messages.clear()
             return FetchStatus.FAILED
 
-                
-                    
         return state
 
     def append_user_message(self, message: str) -> None:
@@ -191,7 +186,7 @@ class MessageQueue:
 
     def get_status(self) -> str:
         """获取当前状态
-        
+
         Returns:
             str: 当前状态，可能为 "已失败"、"请求中" 或 "待命"
         """
@@ -213,7 +208,7 @@ class MessageQueue:
 
     def get_status_info(self) -> dict:
         """获取详细状态信息
-        
+
         Returns:
             dict: 包含详细状态信息的字典
         """

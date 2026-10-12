@@ -55,7 +55,7 @@ class GroupSession(BaseSession):
 
     async def setup(self) -> None:
         await super().setup()
-        await self.setup_session_name()\
+        await self.setup_session_name()
 
     def is_napcat_bot(self) -> bool:
         return self.bot.self_id in config.napcat_bot_ids

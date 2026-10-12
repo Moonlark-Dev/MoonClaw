@@ -126,10 +126,7 @@ async def exec_command(
 
         # 等待命令完成或超时
         try:
-            stdout, stderr = await asyncio.wait_for(
-                process.communicate(),
-                timeout=actual_timeout
-            )
+            stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=actual_timeout)
         except asyncio.TimeoutError:
             # 超时，终止进程
             try:
@@ -169,9 +166,7 @@ async def exec_command(
             result_lines.append(truncated_stdout)
             if stdout_truncated:
                 result_lines.append("")
-                result_lines.append(
-                    await get_text("exec.output_truncated", max_output_length)
-                )
+                result_lines.append(await get_text("exec.output_truncated", max_output_length))
 
         # 添加标准错误
         if truncated_stderr:
@@ -180,9 +175,7 @@ async def exec_command(
             result_lines.append(truncated_stderr)
             if stderr_truncated:
                 result_lines.append("")
-                result_lines.append(
-                    await get_text("exec.output_truncated", max_output_length)
-                )
+                result_lines.append(await get_text("exec.output_truncated", max_output_length))
 
         # 如果没有输出
         if not truncated_stdout and not truncated_stderr:

@@ -11,7 +11,6 @@ from sqlalchemy.dialects.mysql import MEDIUMBLOB, MEDIUMTEXT
 CompatibleMediumText = Text().with_variant(MEDIUMTEXT(), "mysql")
 
 
-
 class Note(Model):
     """Note model for storing user-generated notes with optional expiration and keywords"""
 
@@ -22,6 +21,7 @@ class Note(Model):
     created_time: Mapped[float] = mapped_column(Float())
     expire_time: Mapped[Optional[datetime]] = mapped_column(nullable=True)  # Optional expiration time
 
+
 class MessageQueueCache(Model):
     """消息队列缓存，用于持久化 OpenAI 消息历史以便重启后恢复"""
 
@@ -29,6 +29,7 @@ class MessageQueueCache(Model):
     # MySQL 使用 MEDIUMTEXT (16MB)，SQLite 使用 Text（无大小限制）
     messages_json: Mapped[str] = mapped_column(CompatibleMediumText)  # JSON 序列化的消息列表
     updated_time: Mapped[float] = mapped_column(Float())  # 最后更新时间戳
+
 
 class PrivateChatSession(Model):
     """记录用户私聊会话信息，用于主动消息时获取正确的 bot"""
@@ -39,9 +40,9 @@ class PrivateChatSession(Model):
     last_proactive_message_time: Mapped[Optional[float]] = mapped_column(Float(), nullable=True)  # 最后主动消息时间戳
 
 
-
 class MoonClawConfig(Model):
     """MainSession 数据持久化存储，用于保存 action_history"""
+
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
     data_json: Mapped[str] = mapped_column(Text())
     updated_time: Mapped[datetime] = mapped_column(DateTime(), default=datetime.now)
