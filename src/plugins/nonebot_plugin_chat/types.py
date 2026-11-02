@@ -5,7 +5,6 @@ from typing import Any, Literal, Optional, Protocol, TypedDict
 # from nonebot_plugin_chat.models import RuaAction
 
 
-
 class CachedMessage(TypedDict):
     content: str
     nickname: str
@@ -18,8 +17,6 @@ class CachedMessage(TypedDict):
 class GetTextFunc(Protocol):
     # 在这里精确模拟你的函数签名
     async def __call__(self, key: str, *args: Any, **kwargs: Any) -> str: ...
-
-
 
 
 class AvailableNote(TypedDict):
@@ -44,4 +41,3 @@ class AdapterUserInfo(TypedDict):
     nickname: str
     join_time: int
     card: Optional[str]
-
