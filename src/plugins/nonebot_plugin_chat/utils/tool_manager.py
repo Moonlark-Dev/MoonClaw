@@ -83,10 +83,7 @@ class ToolManager:
         elif report_level == "full":
             # full 模式：显示工具名和完整参数
             params_str = ", ".join(f"{k}={v}" for k, v in params.items())
-            return report_template.format(
-                tool_name=tool_name,
-                params=f" (参数: {params_str})" if params_str else ""
-            )
+            return report_template.format(tool_name=tool_name, params=f" (参数: {params_str})" if params_str else "")
 
         return None
 
@@ -528,7 +525,7 @@ class ToolManager:
                             type="string",
                             description=await self.text("tools_desc.get_note_poster.keywords"),
                             required=False,
-                        )
+                        ),
                     },
                 )
             )

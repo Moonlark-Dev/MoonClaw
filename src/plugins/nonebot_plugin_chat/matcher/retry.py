@@ -29,6 +29,7 @@ from ..core.session import create_private_session, get_session_directly
 
 from ..lang import lang
 
+
 @on_command("retry").handle()
 async def _(
     event: Event,
@@ -42,11 +43,9 @@ async def _(
     if not is_superuser:
         await matcher.finish()
 
-
     session = await create_private_session(user_id, get_target(event), bot)
     if session.mute_until is not None:
         await matcher.finish()
     session.processor.openai_messages.continuous_response = True
     await lang.send("retry.started", user_id)
     await session.processor.openai_messages.fetch_reply()
-    

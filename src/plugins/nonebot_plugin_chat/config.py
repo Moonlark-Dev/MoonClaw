@@ -2,6 +2,7 @@ from nonebot import get_plugin_config
 from pydantic import BaseModel
 from nonebot_plugin_localstore import get_data_dir
 
+
 class Config(BaseModel):
     """Plugin Config Here"""
 

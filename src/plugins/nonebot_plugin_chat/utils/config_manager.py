@@ -74,11 +74,7 @@ class ConfigManager:
             config = await session.get(MoonClawConfig, key)
 
             if config is None:
-                config = MoonClawConfig(
-                    key=key,
-                    data_json=data_json,
-                    updated_time=datetime.now()
-                )
+                config = MoonClawConfig(key=key, data_json=data_json, updated_time=datetime.now())
                 session.add(config)
             else:
                 config.data_json = data_json
@@ -180,5 +176,6 @@ class ConfigManager:
         for key, value in updates.items():
             results[key] = await self.set(key, value)
         return results
+
 
 config_manager = ConfigManager()

@@ -5,9 +5,6 @@ from nonebot import get_driver
 driver = get_driver()
 
 
-
-
-
 @driver.on_startup
 async def _init_video_server():
     import nonebot

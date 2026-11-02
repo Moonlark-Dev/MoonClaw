@@ -50,7 +50,6 @@ class PrivateSession(BaseSession):
     def is_napcat_bot(self) -> bool:
         return self.bot.self_id in config.napcat_bot_ids
 
-
     async def get_user_info(self, _: str) -> AdapterUserInfo:
         return self.user_info
 
